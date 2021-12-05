@@ -1,8 +1,9 @@
-import { CourseService } from './../../../course/course.service';
+import { CoursesService } from './courses.service';
+
 import { Controller, Get, Param } from '@nestjs/common';
 @Controller('courses')
 export class CoursesController {
-    constructor(private readonly courseService: CourseService) { }
+    constructor(private readonly courseService: CoursesService) { }
     @Get()
     findAll() {
         return 'Listagem de cursos'
