@@ -30,7 +30,7 @@ export class CoursesService {
         this.courses[indexCourse] = updateCursoDTO
     }
 
-    remove(id: string, updateCursoDTO: any) {
+    remove(id: string) {
         const indexCourse = this.courses.findIndex((course: Course) => course.id == Number(id))
         if (indexCourse > 0) {
             this.courses.splice(indexCourse, 1)
