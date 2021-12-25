@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Tag } from './tag.entity';
+import { type } from "os";
+import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('courses')
 export class Course {
@@ -10,7 +12,9 @@ export class Course {
 
     @Column()
     description: string;
-
-    @Column('json', { nullable: true })
+    // a entidade principal da relação recebe @JoinTable 
+    // primeiro parâmetro é o alvo, segundo é a propriedade
+    @JoinTable()
+    @ManyToMany(() => Tag, (tag: Tag) => tag.courses)
     tags: string[];
 }
