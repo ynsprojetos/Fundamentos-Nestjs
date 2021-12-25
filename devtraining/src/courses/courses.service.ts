@@ -1,3 +1,4 @@
+import { Tag } from './entities/tag.entity';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { Course } from './entities/course.entity';
@@ -8,8 +9,10 @@ import { Repository } from 'typeorm';
 @Injectable()
 export class CoursesService {
     constructor(
-        @InjectRepository(Course) private readonly courseRepository: Repository<Course>
+        @InjectRepository(Course) private readonly courseRepository: Repository<Course>,
+        @InjectRepository(Tag) private readonly tagRepository: Repository<Tag>
     ) { }
+
     findAll() {
         return this.courseRepository.find()
     }
@@ -23,14 +26,29 @@ export class CoursesService {
         return course
     }
 
-    create(createCursoDTO: CreateCourseDto) {
-        const courses = this.courseRepository.create(createCursoDTO)
-        return this.courseRepository.save(courses)
+    async create(createCursoDTO: CreateCourseDto) {
+        const tags = await Promise.all(
+            createCursoDTO.tags.map((name: string) => this.preloadTagByName(name))
+        )
+
+        const course = this.courseRepository.create({
+            ...createCursoDTO, tags
+        })
+
+        return this.courseRepository.save(course)
+
     }
 
     async update(id: string, updateCursoDTO: UpdateCourseDto) {
+
+        const tags = updateCursoDTO.tags && (
+            await Promise.all(updateCursoDTO.tags.map(name => this.preloadTagByName(name)))
+        )
+
         const course = await this.courseRepository.preload({
-            id: + id, ...updateCursoDTO,
+            id: + id,
+            ...updateCursoDTO,
+            tags
         })
 
         if (!course) {
@@ -49,6 +67,16 @@ export class CoursesService {
 
         return this.courseRepository.remove(course)
 
+    }
+
+    private async preloadTagByName(name: string): Promise<Tag> {
+        const tag = await this.tagRepository.findOne({ name });
+
+        if (tag) {
+            return tag
+        }
+
+        return this.tagRepository.create({ name })
     }
 
 }
